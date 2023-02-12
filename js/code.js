@@ -1,7 +1,24 @@
+// Select the pong container, add some text and CSS, and hide it
+const container = $('#pong')
+  .css({
+    "font-family": "monospace",
+    "font-weight": "bold",
+    "text-align": "center",
+    "color": "var(--pong-fg)"
+  })
+  .addClass('default')
+  .hide()
+
+const SCALE = isNaN(+container.attr('data-pong-scale')) ? 1 : container.attr('data-pong-scale')
+const WIDTH = 400*SCALE
+const HEIGHT = 300*SCALE
+const SIZE = 10*SCALE
+container.css({"font-size": SCALE*20+"px"})
+
 class Paddle extends jQuery {
-  width = 10
-  height = 100
-  speed = 5
+  width = SIZE
+  height = HEIGHT/3 // 100
+  speed = WIDTH/80 // 5
   top = this.width
   side = "left"
   parent
@@ -76,7 +93,7 @@ class Paddle extends jQuery {
 }
 
 class Ball extends jQuery {
-  baseSpeed = 5
+  baseSpeed = WIDTH/80 // 5
   xSpeed
   ySpeed
   direction = 1 // Direction on the x axis. -1 = left, 1 = right
@@ -89,8 +106,8 @@ class Ball extends jQuery {
     super('<div>')
       .css({
         "position": "absolute",
-        "height": "10px",
-        "width": "10px",
+        "height": SIZE+"px",
+        "width": SIZE+"px",
         "background-color": "var(--pong-fg)",
       })
       .appendTo(parent)
@@ -140,21 +157,8 @@ class Ball extends jQuery {
 
 }
 
-// Select the pong container, add some text and CSS, and hide it
-const container = $('#pong')
-  .css({
-    "font-family": "monospace",
-    "font-weight": "bold",
-    "font-size": "20px",
-    "text-align": "center",
-    "color": "var(--pong-fg)"
-  })
-  .addClass('default')
-  .append("PONG")
-  .hide()
-
 // Variables to handle themes
-let currentTheme = container.attr('data-pong-theme')
+let currentTheme = container.data('pong-theme')
 const themes = {
   default: {
     bg: '#282828',
@@ -205,27 +209,52 @@ function changeTheme(name) {
 }
 changeTheme(currentTheme)
 
+// Add a header element used to display info
+const header = jQuery('<div>')
+  .css({
+    "background-color": "var(--pong-bg)",
+    "color": "var(--pong-fg)",
+    "font-family": "inherit",
+    "font-weight": "inherit",
+    "width": "100%",
+    "padding": SIZE/2+"px",
+    "border": SIZE/2+"px solid var(--pong-fg)",
+    "border-bottom-width": "0px",
+    "box-sizing": "border-box"
+  })
+  .prependTo(container)
+
+if (container.data('pong-hide-title') === undefined) {
+  jQuery('<p>')
+    .text("PONG")
+    .prependTo(header)
+}
+
+if (container.data('pong-hide-help') === undefined) {
+  jQuery('<p>')
+    .text("P1: w-s | P2: i-k")
+    .appendTo(header)
+}
+
 // Add a score counter to the container
 const score = jQuery('<p>')
   .text("0 - 0")
-  .appendTo(container)
+  .appendTo(header)
 
 // Create an element for the game itself
-const WIDTH = 400
-const HEIGHT = 300
 const gameScreen = jQuery('<div>')
   .css({
     "background-color": "var(--pong-bg)",
     "width": WIDTH+"px",
     "height": HEIGHT+"px",
-    "border": "5px solid var(--pong-fg)",
+    "border": SIZE/2+"px solid var(--pong-fg)",
     "position": "relative"
   })
   .appendTo(container)
 
 // Create a button to switch themes
-if (container.attr('data-pong-hidetheme') === undefined) {
-  const themeSwitcher = jQuery('<button>')
+if (container.data('pong-hide-themebtn') === undefined) {
+  jQuery('<div>')
     .text("Change theme")
     .click(() => {
       let i = themeNames.indexOf(currentTheme)
@@ -238,12 +267,12 @@ if (container.attr('data-pong-hidetheme') === undefined) {
     .css({
       "background-color": "var(--pong-bg)",
       "color": "var(--pong-fg)",
-      "font-family": "inherit",
-      "font-weight": "inherit",
+      "font-size": ".8em",
       "width": "100%",
-      "padding": "5px",
-      "border": "5px solid var(--pong-fg)",
-      "border-top-width": "1px"
+      "padding": SIZE/2+"px",
+      "border": SIZE/2+"px solid var(--pong-fg)",
+      "border-top-width": "0px",
+      "box-sizing": "border-box",
     })
     .appendTo(container)
 }
@@ -350,7 +379,7 @@ function pong() {
       ball.direction = -1
       ball.deviate(p2touch.yDifference / 100)
     }
-    ball.baseSpeed += 0.5
+    ball.baseSpeed += initialBallSpeed/10
   }
 
 
@@ -393,10 +422,10 @@ function serve(paddle) {
 
   // Move the ball alongside the paddle
   let top = paddle.top + paddle.height/2 - ball.height()/2
-  let left = paddle.width*2 + 10
+  let left = paddle.width*2 + SIZE
   ball.direction = 1
   if (paddle.side == "right") {
-    left = paddle.parent.width() - left - 10
+    left = paddle.parent.width() - left - SIZE
     ball.direction = -1
   }
   ball.moveTo(top, left)
