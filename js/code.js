@@ -154,11 +154,27 @@ const container = $('#pong')
   .hide()
 
 // Variables to handle themes
-let currentTheme = ''
+let currentTheme = container.attr('data-pong-theme')
 const themes = {
   default: {
     bg: '#282828',
     fg: '#ddd',
+  },
+  groovy1: {
+    bg: '#282828',
+    fg: '#EBDBB2'
+  },
+  groovy2: {
+    bg: '#282828',
+    fg: '#CC241D'
+  },
+  groovy3: {
+    bg: '#282828',
+    fg: '#689D6A'
+  },
+  groovy4: {
+    bg: '#282828',
+    fg: '#98971A'
   },
   light: {
     bg: '#ddd',
@@ -187,7 +203,7 @@ function changeTheme(name) {
 
   currentTheme = name
 }
-changeTheme()
+changeTheme(currentTheme)
 
 // Add a score counter to the container
 const score = jQuery('<p>')
@@ -208,27 +224,29 @@ const gameScreen = jQuery('<div>')
   .appendTo(container)
 
 // Create a button to switch themes
-const themeSwitcher = jQuery('<button>')
-  .text("Change theme")
-  .click(() => {
-    let i = themeNames.indexOf(currentTheme)
-    if (i == -1 || i == themeNames.length-1)
-      i = 0
-    else
-      i++
-    changeTheme(themeNames[i])
-  })
-  .css({
-    "background-color": "var(--pong-bg)",
-    "color": "var(--pong-fg)",
-    "font-family": "inherit",
-    "font-weight": "inherit",
-    "width": "100%",
-    "padding": "5px",
-    "border": "5px solid var(--pong-fg)",
-    "border-top-width": "1px"
-  })
-  .appendTo(container)
+if (container.attr('data-pong-hidetheme') === undefined) {
+  const themeSwitcher = jQuery('<button>')
+    .text("Change theme")
+    .click(() => {
+      let i = themeNames.indexOf(currentTheme)
+      if (i == -1 || i == themeNames.length-1)
+        i = 0
+      else
+        i++
+      changeTheme(themeNames[i])
+    })
+    .css({
+      "background-color": "var(--pong-bg)",
+      "color": "var(--pong-fg)",
+      "font-family": "inherit",
+      "font-weight": "inherit",
+      "width": "100%",
+      "padding": "5px",
+      "border": "5px solid var(--pong-fg)",
+      "border-top-width": "1px"
+    })
+    .appendTo(container)
+}
 
 const pauseText = jQuery('<p>')
   .css({
