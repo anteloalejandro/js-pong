@@ -374,12 +374,13 @@ function pong() {
     // Make the ball bounce off of the paddle and speed it up
     if (p1touch.collides) {
       ball.direction = 1
-      ball.deviate(p1touch.yDifference / 100)
+      ball.deviate(p1touch.yDifference / (100 * SCALE))
     } else if (p2touch.collides) {
       ball.direction = -1
-      ball.deviate(p2touch.yDifference / 100)
+      ball.deviate(p2touch.yDifference / (100 * SCALE))
     }
-    ball.baseSpeed += initialBallSpeed/10
+    if (ball.baseSpeed < initialBallSpeed*3)
+      ball.baseSpeed += initialBallSpeed/10
   }
 
 
