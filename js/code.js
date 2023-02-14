@@ -9,7 +9,8 @@ const container = $('#pong')
   .addClass('default')
   .hide()
 
-const SCALE = isNaN(+container.attr('data-pong-scale')) ? 1 : container.attr('data-pong-scale')
+let pongScale = container.data('pong-scale')
+const SCALE = isNaN(+pongScale) ? 1 : pongScale
 const WIDTH = 400*SCALE
 const HEIGHT = 300*SCALE
 const SIZE = 10*SCALE
@@ -137,7 +138,7 @@ class Ball extends jQuery {
     // Add deviation to speed on the y axis
     this.ySpeed = this.baseSpeed*this.deviation,
     // Substract it from the x axis, but set its direction using the direction attribute
-    this.xSpeed = this.direction*(this.baseSpeed-Math.abs(this.baseSpeed*this.deviation))
+    this.xSpeed = this.direction*Math.sqrt(this.baseSpeed**2-this.ySpeed**2)
 
     const top = this.top + this.ySpeed
     const left = this.left + this.xSpeed
@@ -160,34 +161,13 @@ class Ball extends jQuery {
 // Variables to handle themes
 let currentTheme = container.data('pong-theme')
 const themes = {
-  default: {
-    bg: '#282828',
-    fg: '#ddd',
-  },
-  groovy1: {
-    bg: '#282828',
-    fg: '#EBDBB2'
-  },
-  groovy2: {
-    bg: '#282828',
-    fg: '#CC241D'
-  },
-  groovy3: {
-    bg: '#282828',
-    fg: '#689D6A'
-  },
-  groovy4: {
-    bg: '#282828',
-    fg: '#98971A'
-  },
-  light: {
-    bg: '#ddd',
-    fg: '#282828',
-  },
-  gameboy: {
-    bg: '#8BAC0F',
-    fg: '#0F380F'
-  }
+  default: { bg: '#282828', fg: '#dddddd' },
+  groovy1: { bg: '#282828', fg: '#EBDBB2' },
+  groovy2: { bg: '#282828', fg: '#CC241D' },
+  groovy3: { bg: '#282828', fg: '#689D6A' },
+  groovy4: { bg: '#282828', fg: '#98971A' },
+  light:   { bg: '#dddddd', fg: '#282828' },
+  gameboy: { bg: '#8BAC0F', fg: '#0F380F' }
 }
 const themeNames = Object.keys(themes)
 
@@ -217,8 +197,8 @@ const header = jQuery('<div>')
     "font-family": "inherit",
     "font-weight": "inherit",
     "width": "100%",
-    "padding": SIZE/2+"px",
-    "border": SIZE/2+"px solid var(--pong-fg)",
+    "padding": SIZE+"px",
+    "border": SIZE+"px solid var(--pong-fg)",
     "border-bottom-width": "0px",
     "box-sizing": "border-box"
   })
@@ -247,7 +227,7 @@ const gameScreen = jQuery('<div>')
     "background-color": "var(--pong-bg)",
     "width": WIDTH+"px",
     "height": HEIGHT+"px",
-    "border": SIZE/2+"px solid var(--pong-fg)",
+    "border": SIZE+"px solid var(--pong-fg)",
     "position": "relative"
   })
   .appendTo(container)
@@ -269,8 +249,8 @@ if (container.data('pong-hide-themebtn') === undefined) {
       "color": "var(--pong-fg)",
       "font-size": ".8em",
       "width": "100%",
-      "padding": SIZE/2+"px",
-      "border": SIZE/2+"px solid var(--pong-fg)",
+      "padding": SIZE+"px",
+      "border": SIZE+"px solid var(--pong-fg)",
       "border-top-width": "0px",
       "box-sizing": "border-box",
     })
@@ -393,6 +373,7 @@ function pong() {
 
   // Loop the game
   if (playing) {
+    console.log(ball.xSpeed, ball.ySpeed, ball.xSpeed**2 + ball.ySpeed**2)
     requestAnimationFrame(pong)
   }
 }
