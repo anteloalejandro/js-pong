@@ -345,8 +345,6 @@ function pong() {
     serve(loser)
   }
 
-  ball.animate()
-
   // Check if the ball is touching either of the paddles
   const p1touch = leftPad.collidesWith(ball)
   const p2touch = rightPad.collidesWith(ball)
@@ -367,13 +365,13 @@ function pong() {
   // Make the ball bounce off of the top and bottom
   if (ball.top <= ball.height()/2)
     ball.deviation = Math.abs(ball.deviation)
-  else if (ball.top >= ball.parent.height() - ball.height()/2) {
+  else if (ball.top >= ball.parent.height() - ball.height()/2)
     ball.deviation = -Math.abs(ball.deviation)
-  }
+
+  ball.animate()
 
   // Loop the game
   if (playing) {
-    console.log(ball.xSpeed, ball.ySpeed, ball.xSpeed**2 + ball.ySpeed**2)
     requestAnimationFrame(pong)
   }
 }
