@@ -9,12 +9,20 @@ const container = $('#pong')
   .addClass('default')
   .hide()
 
-let pongScale = container.data('pong-scale')
+const pongScale = container.data('pong-scale')
 const SCALE = isNaN(+pongScale) ? 1 : pongScale
 const WIDTH = 400*SCALE
 const HEIGHT = 300*SCALE
 const SIZE = 10*SCALE
 container.css({"font-size": SCALE*20+"px"})
+
+let volume = +container.data('pong-volume')
+if (isNaN(volume) || Math.abs(volume) > 1)
+  volume = 0.5
+const paddleAudio = new Audio("../audio/paddle.ogg")
+paddleAudio.volume = volume
+const wallAudio = new Audio("../audio/wall.ogg")
+wallAudio.volume = volume
 
 class Paddle extends jQuery {
   width = SIZE
@@ -349,6 +357,7 @@ function pong() {
   const p1touch = leftPad.collidesWith(ball)
   const p2touch = rightPad.collidesWith(ball)
   if (p1touch.collides || p2touch.collides) {
+    paddleAudio.play()
     // Make the ball bounce off of the paddle and speed it up
     if (p1touch.collides) {
       ball.direction = 1
@@ -363,10 +372,16 @@ function pong() {
 
 
   // Make the ball bounce off of the top and bottom
-  if (ball.top <= ball.height()/2)
-    ball.deviation = Math.abs(ball.deviation)
-  else if (ball.top >= ball.parent.height() - ball.height()/2)
-    ball.deviation = -Math.abs(ball.deviation)
+  const bounceTop = ball.top <= ball.height()/2
+  const bounceBottom = ball.top >= ball.parent.height() - ball.height()/2
+  if (bounceTop || bounceBottom) {
+    if (bounceTop)
+      ball.deviation = Math.abs(ball.deviation)
+    else if (bounceBottom)
+      ball.deviation = -Math.abs(ball.deviation)
+
+    wallAudio.play()
+  }
 
   ball.animate()
 
