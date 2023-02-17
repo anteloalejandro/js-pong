@@ -297,8 +297,6 @@ function pong() {
     if (ev.key == 'p') {
       if (playing) {
         playing = false
-        delete document.onkeydown
-        delete document.onkeyup
         pauseText.show(100)
       } else {
         playing = true
@@ -357,7 +355,7 @@ function pong() {
       ball.deviate(p2touch.yDifference / (100 * SCALE))
     }
     if (ball.baseSpeed < initialBallSpeed*3)
-      ball.baseSpeed += initialBallSpeed/10
+      ball.baseSpeed += initialBallSpeed/20
   }
 
 
