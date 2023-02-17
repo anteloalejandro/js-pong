@@ -43,8 +43,8 @@ class Paddle extends jQuery {
       initialLeft = parent.width() - this.width*2
     }
     this.css({
-        "left": initialLeft+"px",
-        "top": this.top+"px",
+      "left": initialLeft+"px",
+      "top": this.top+"px",
     })
   }
 
@@ -84,7 +84,6 @@ class Paddle extends jQuery {
 
     const yMatch = !((yThis + this.height) < yThat ||
       yThis > (yThat + that.width()))
-
 
     return {
       collides: xMatch && yMatch,
@@ -414,9 +413,9 @@ function serve(paddle) {
   if (serving) {
     requestAnimationFrame(() => {serve(paddle)})
   } else {
-      playing = true
-      pong()
-      return
+    playing = true
+    pong()
+    return
   }
 }
 
