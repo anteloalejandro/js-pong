@@ -19,14 +19,16 @@ container.css({"font-size": SCALE*20+"px"})
 let volume = +container.data('pong-volume')
 if (isNaN(volume) || Math.abs(volume) > 1)
   volume = 0.5
-const paddleAudio = new Audio("../audio/paddle.ogg")
-paddleAudio.volume = volume
-const wallAudio = new Audio("../audio/wall.ogg")
-wallAudio.volume = volume
-const loseAudio = new Audio("../audio/lose.ogg")
-loseAudio.volume = volume
-const serveAudio = new Audio("../audio/serve.ogg")
-serveAudio.volume = volume
+// Object with Audio instances
+const audio = {
+  paddle: new Audio("../audio/paddle.ogg"),
+  wall: new Audio("../audio/wall.ogg"),
+  score: new Audio("../audio/lose.ogg"),
+  serve: new Audio("../audio/serve.ogg")
+}
+Object.keys(audio).forEach(a => {
+  audio[a].volume = volume
+})
 
 class Paddle extends jQuery {
   width = SIZE
@@ -341,7 +343,7 @@ function pong() {
   const p2win = ball.left <= -ball.width()/2
   const p1win = ball.left >= ball.parent.width() - ball.width()/2
   if (p1win || p2win) {
-    loseAudio.play()
+    audio.score.play()
     // Reset speed, update score and start serving
     ball.baseSpeed = initialBallSpeed
     serving = true
@@ -362,7 +364,7 @@ function pong() {
   const p1touch = leftPad.collidesWith(ball)
   const p2touch = rightPad.collidesWith(ball)
   if (p1touch.collides || p2touch.collides) {
-    paddleAudio.play()
+    audio.paddle.play()
     // Make the ball bounce off of the paddle and speed it up
     if (p1touch.collides) {
       ball.direction = 1
@@ -385,7 +387,7 @@ function pong() {
     else if (bounceBottom)
       ball.deviation = -Math.abs(ball.deviation)
 
-    wallAudio.play()
+    audio.wall.play()
   }
 
   ball.animate()
@@ -406,7 +408,7 @@ function serve(paddle) {
   document.onkeydown = ev => {
     if (ev.key === ' ') {
       serving = false
-      serveAudio.play()
+      audio.serve.play()
     }
     if(keyHandler[ev.key])
       keyHandler[ev.key].pressed = true
