@@ -319,6 +319,13 @@ const keyHandler = {
   k: {pressed: false, func: rightPad.moveDown}
 }
 
+function handleInput() {
+  // Run the function associated with each pressed key
+  Object.keys(keyHandler).forEach(key => {
+    if (keyHandler[key].pressed) keyHandler[key].func()
+  })
+}
+
 // Variable to handle game state
 const initialBallSpeed = ball.baseSpeed
 let playing = true
@@ -326,54 +333,6 @@ let serving = true
 let restart = false
 let p1Score = 0
 let p2Score = 0
-
-document.onkeydown = ev => {
-  ev.preventDefault()
-  if (restart) {
-    p1Score = 0
-    p2Score = 0
-    score.text('0 - 0')
-    pauseText.hide(0)
-    pauseText.text('PAUSED')
-    restart = false
-    ball.deviate()
-    serving = true
-    serve()
-  // If the 'p' or 'q' keys are is pressed, pause/play
-  } else if ((ev.key == 'p' || ev.key == 'q') && !serving) {
-    if (playing) {
-      playing = false
-      pauseText.show(100)
-    } else {
-      playing = true
-      pauseText.hide(100)
-      pong()
-    }
-    return
-  // Serve if the spacebar is pressed, and move the paddle
-  } else if (ev.key == ' ' && serving) {
-    audio.serve.play()
-    serving = false
-  }
-
-  // When pressing one of the keys in the handler, mark it as pressed
-  // This allows multiple keys to be pressed at the same time
-  if(keyHandler[ev.key])
-    keyHandler[ev.key].pressed = true
-}
-
-document.onkeyup = ev => {
-  // When one of the keys in the handler is released, mark it as not pressed
-  if(keyHandler[ev.key])
-    keyHandler[ev.key].pressed = false
-}
-
-function handleInput() {
-  // Run the function associated with each pressed key
-  Object.keys(keyHandler).forEach(key => {
-    if (keyHandler[key].pressed) keyHandler[key].func()
-  })
-}
 
 // Main game function
 function pong() {
@@ -479,7 +438,49 @@ function serve(paddle) {
 }
 
 // When the document loads, fade in the game and serve
-$(document).ready(() => {
-  container.fadeIn(1000)
-  serve()
-})
+$(document)
+  .ready(() => {
+    container.fadeIn(1000)
+    serve()
+  })
+  .keydown(ev => {
+    ev.preventDefault()
+    if (restart) {
+      p1Score = 0
+      p2Score = 0
+      score.text('0 - 0')
+      pauseText.hide(0)
+      pauseText.text('PAUSED')
+      restart = false
+      ball.deviate()
+      serving = true
+      serve()
+      // If the 'p' or 'q' keys are is pressed, pause/play
+    } else if ((ev.key == 'p' || ev.key == 'q') && !serving) {
+      if (playing) {
+        playing = false
+        pauseText.show(100)
+      } else {
+        playing = true
+        pauseText.hide(100)
+        pong()
+      }
+      return
+      // Serve if the spacebar is pressed, and move the paddle
+    } else if (ev.key == ' ' && serving) {
+      audio.serve.play()
+      serving = false
+    }
+
+    // When pressing one of the keys in the handler, mark it as pressed
+    // This allows multiple keys to be pressed at the same time
+    if(keyHandler[ev.key])
+      keyHandler[ev.key].pressed = true
+  })
+  .keyup(ev => {
+    // When one of the keys in the handler is released, mark it as not pressed
+    if(keyHandler[ev.key])
+      keyHandler[ev.key].pressed = false
+  })
+
+
