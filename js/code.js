@@ -9,7 +9,7 @@ const container = $('#pong')
   .addClass('default')
   .hide()
 
-let pongScale = container.data('pong-scale')
+const pongScale = container.data('pong-scale')
 const SCALE = isNaN(+pongScale) ? 1 : pongScale
 const WIDTH = 400*SCALE
 const HEIGHT = 300*SCALE
@@ -84,6 +84,7 @@ class Paddle extends jQuery {
 
     const yMatch = !((yThis + this.height) < yThat ||
       yThis > (yThat + that.width()))
+
 
     return {
       collides: xMatch && yMatch,
@@ -290,37 +291,45 @@ let serving = true
 let p1Score = 0
 let p2Score = 0
 
-// Main game function
-function pong() {
-  document.onkeydown = ev => {
-    // If the 'p' key is pressed, pause/play
-    if (ev.key == 'p') {
-      if (playing) {
-        playing = false
-        pauseText.show(100)
-      } else {
-        playing = true
-        pauseText.hide(100)
-        pong()
-      }
-      return
+document.onkeydown = ev => {
+  ev.preventDefault()
+  // If the 'p' key is pressed, pause/play
+  if (ev.key == 'p') {
+    if (playing) {
+      playing = false
+      pauseText.show(100)
+    } else {
+      playing = true
+      pauseText.hide(100)
+      pong()
     }
-    // When pressing one of the keys in the handler, mark it as pressed
-    // This allows multiple keys to be pressed at the same time
-    if(keyHandler[ev.key])
-      keyHandler[ev.key].pressed = true
+    return
+  } else if (ev.key == ' ' && serving) {
+    serving = false
   }
+  // When pressing one of the keys in the handler, mark it as pressed
+  // This allows multiple keys to be pressed at the same time
+  if(keyHandler[ev.key])
+    keyHandler[ev.key].pressed = true
+}
 
-  document.onkeyup = ev => {
-    // When one of the keys in the handler is released, mark it as not pressed
-    if(keyHandler[ev.key])
-      keyHandler[ev.key].pressed = false
-  }
+document.onkeyup = ev => {
+  // When one of the keys in the handler is released, mark it as not pressed
+  if(keyHandler[ev.key])
+    keyHandler[ev.key].pressed = false
+}
 
-  // Run the function associated with each pressed key
+function handleInput() {
   Object.keys(keyHandler).forEach(key => {
     if (keyHandler[key].pressed) keyHandler[key].func()
   })
+
+}
+
+// Main game function
+function pong() {
+  // Run the function associated with each pressed key
+  handleInput()
 
   // Check win condition
   const p2win = ball.left <= -ball.width()/2
@@ -355,14 +364,16 @@ function pong() {
       ball.deviate(p2touch.yDifference / (100 * SCALE))
     }
     if (ball.baseSpeed < initialBallSpeed*3)
-      ball.baseSpeed += initialBallSpeed/20
+      ball.baseSpeed += initialBallSpeed/10
   }
 
 
   // Make the ball bounce off of the top and bottom
-  if (ball.top <= ball.height()/2)
+  const bounceTop = ball.top <= ball.height()/2
+  const bounceBottom = ball.top >= ball.parent.height() - ball.height()/2
+  if (bounceTop)
     ball.deviation = Math.abs(ball.deviation)
-  else if (ball.top >= ball.parent.height() - ball.height()/2)
+  else if (bounceBottom)
     ball.deviation = -Math.abs(ball.deviation)
 
   ball.animate()
@@ -380,23 +391,7 @@ function serve(paddle) {
   playing = false
 
   // Serve if the spacebar is pressed, and move the paddle
-  document.onkeydown = ev => {
-    if (ev.key === ' ') {
-      serving = false
-    }
-    if(keyHandler[ev.key])
-      keyHandler[ev.key].pressed = true
-  }
-
-  document.onkeyup = ev => {
-    if(keyHandler[ev.key])
-      keyHandler[ev.key].pressed = false
-  }
-
-  Object.keys(keyHandler).forEach(key => {
-    if (keyHandler[key].pressed) keyHandler[key].func()
-  })
-
+  handleInput()
   // Move the ball alongside the paddle
   let top = paddle.top + paddle.height/2 - ball.height()/2
   let left = paddle.width*2 + SIZE
@@ -411,9 +406,9 @@ function serve(paddle) {
   if (serving) {
     requestAnimationFrame(() => {serve(paddle)})
   } else {
-    playing = true
-    pong()
-    return
+      playing = true
+      pong()
+      return
   }
 }
 
