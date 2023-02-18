@@ -293,8 +293,8 @@ let p2Score = 0
 
 document.onkeydown = ev => {
   ev.preventDefault()
-  // If the 'p' key is pressed, pause/play
-  if (ev.key == 'p') {
+  // If the 'p' or 'q' keys are is pressed, pause/play
+  if ((ev.key == 'p' || ev.key == 'q') && !serving) {
     if (playing) {
       playing = false
       pauseText.show(100)
@@ -304,9 +304,11 @@ document.onkeydown = ev => {
       pong()
     }
     return
+  // Serve if the spacebar is pressed, and move the paddle
   } else if (ev.key == ' ' && serving) {
     serving = false
   }
+
   // When pressing one of the keys in the handler, mark it as pressed
   // This allows multiple keys to be pressed at the same time
   if(keyHandler[ev.key])
@@ -320,15 +322,14 @@ document.onkeyup = ev => {
 }
 
 function handleInput() {
+  // Run the function associated with each pressed key
   Object.keys(keyHandler).forEach(key => {
     if (keyHandler[key].pressed) keyHandler[key].func()
   })
-
 }
 
 // Main game function
 function pong() {
-  // Run the function associated with each pressed key
   handleInput()
 
   // Check win condition
@@ -389,9 +390,8 @@ function pong() {
 function serve(paddle) {
   // Stop the game while serving
   playing = false
-
-  // Serve if the spacebar is pressed, and move the paddle
   handleInput()
+
   // Move the ball alongside the paddle
   let top = paddle.top + paddle.height/2 - ball.height()/2
   let left = paddle.width*2 + SIZE
@@ -406,9 +406,8 @@ function serve(paddle) {
   if (serving) {
     requestAnimationFrame(() => {serve(paddle)})
   } else {
-      playing = true
-      pong()
-      return
+    playing = true
+    pong()
   }
 }
 
