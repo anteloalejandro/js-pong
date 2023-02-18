@@ -30,6 +30,27 @@ Object.keys(audio).forEach(a => {
   audio[a].volume = volume
 })
 
+// Method of 'container' to play a randomized shake animation
+container.shake = function(speed = 50, iterations = 5) {
+  this.css({"position": "relative"})
+  let i = 0
+  function random() {
+    return Math.floor(Math.random()*10) - 5
+  }
+  var tmp = setInterval(() => {
+    this.animate({
+      "top": random(),
+      "left": random(),
+    }, speed, "swing")
+
+    i++
+    if (i >= iterations) {
+      clearInterval(tmp)
+      this.css({"position": "unset"})
+    }
+  }, speed)
+}
+
 class Paddle extends jQuery {
   width = SIZE
   height = HEIGHT/3 // 100
@@ -352,6 +373,7 @@ function pong() {
   const p1win = ball.left >= ball.parent.width() - ball.width()/2
   if (p1win || p2win) {
     audio.score.play()
+    container.shake()
     // Reset speed, update score and start serving
     ball.baseSpeed = initialBallSpeed
     serving = true
