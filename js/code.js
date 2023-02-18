@@ -23,6 +23,10 @@ const paddleAudio = new Audio("../audio/paddle.ogg")
 paddleAudio.volume = volume
 const wallAudio = new Audio("../audio/wall.ogg")
 wallAudio.volume = volume
+const loseAudio = new Audio("../audio/lose.ogg")
+loseAudio.volume = volume
+const serveAudio = new Audio("../audio/serve.ogg")
+serveAudio.volume = volume
 
 class Paddle extends jQuery {
   width = SIZE
@@ -337,6 +341,7 @@ function pong() {
   const p2win = ball.left <= -ball.width()/2
   const p1win = ball.left >= ball.parent.width() - ball.width()/2
   if (p1win || p2win) {
+    loseAudio.play()
     // Reset speed, update score and start serving
     ball.baseSpeed = initialBallSpeed
     serving = true
@@ -401,6 +406,7 @@ function serve(paddle) {
   document.onkeydown = ev => {
     if (ev.key === ' ') {
       serving = false
+      serveAudio.play()
     }
     if(keyHandler[ev.key])
       keyHandler[ev.key].pressed = true
