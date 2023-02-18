@@ -323,13 +323,24 @@ const keyHandler = {
 const initialBallSpeed = ball.baseSpeed
 let playing = true
 let serving = true
+let restart = false
 let p1Score = 0
 let p2Score = 0
 
 document.onkeydown = ev => {
   ev.preventDefault()
+  if (restart) {
+    p1Score = 0
+    p2Score = 0
+    score.text('0 - 0')
+    pauseText.hide(0)
+    pauseText.text('PAUSED')
+    restart = false
+    ball.deviate()
+    serving = true
+    serve()
   // If the 'p' or 'q' keys are is pressed, pause/play
-  if ((ev.key == 'p' || ev.key == 'q') && !serving) {
+  } else if ((ev.key == 'p' || ev.key == 'q') && !serving) {
     if (playing) {
       playing = false
       pauseText.show(100)
@@ -373,7 +384,6 @@ function pong() {
   const p1win = ball.left >= ball.parent.width() - ball.width()/2
   if (p1win || p2win) {
     audio.score.play()
-    container.shake()
     // Reset speed, update score and start serving
     ball.baseSpeed = initialBallSpeed
     serving = true
@@ -387,7 +397,18 @@ function pong() {
     }
 
     score.text(p1Score + ' - ' + p2Score)
-    serve(loser)
+    if (p1Score >= 10 || p2Score >= 10) {
+      playing = false
+      serving = false
+      pauseText.show(100)
+      pauseText.text((p1win ? 'Player 1' : 'Player 2') + ' won!')
+      container.shake(60, 30)
+      restart = true
+      return
+    } else {
+      container.shake()
+      serve(loser)
+    }
   }
 
   // Check if the ball is touching either of the paddles
@@ -431,6 +452,9 @@ function pong() {
 // Function to serve at the start and in between games
 /** @param {Paddle} paddle*/
 function serve(paddle) {
+  if (paddle === undefined)
+    paddle = Math.random() < 0.5 ? leftPad : rightPad
+
   // Stop the game while serving
   playing = false
   handleInput()
@@ -457,5 +481,5 @@ function serve(paddle) {
 // When the document loads, fade in the game and serve
 $(document).ready(() => {
   container.fadeIn(1000)
-  serve(leftPad)
+  serve()
 })
