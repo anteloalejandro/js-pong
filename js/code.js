@@ -16,6 +16,20 @@ const HEIGHT = 300*SCALE
 const SIZE = 10*SCALE
 container.css({"font-size": SCALE*20+"px"})
 
+let volume = +container.data('pong-volume')
+if (isNaN(volume) || Math.abs(volume) > 1)
+  volume = 0.5
+// Object with Audio instances
+const audio = {
+  paddle: new Audio("../audio/paddle.ogg"),
+  wall: new Audio("../audio/wall.ogg"),
+  score: new Audio("../audio/lose.ogg"),
+  serve: new Audio("../audio/serve.ogg")
+}
+Object.keys(audio).forEach(a => {
+  audio[a].volume = volume
+})
+
 class Paddle extends jQuery {
   width = SIZE
   height = HEIGHT/3 // 100
@@ -306,6 +320,7 @@ document.onkeydown = ev => {
     return
   // Serve if the spacebar is pressed, and move the paddle
   } else if (ev.key == ' ' && serving) {
+    audio.serve.play()
     serving = false
   }
 
@@ -336,6 +351,7 @@ function pong() {
   const p2win = ball.left <= -ball.width()/2
   const p1win = ball.left >= ball.parent.width() - ball.width()/2
   if (p1win || p2win) {
+    audio.score.play()
     // Reset speed, update score and start serving
     ball.baseSpeed = initialBallSpeed
     serving = true
@@ -356,6 +372,7 @@ function pong() {
   const p1touch = leftPad.collidesWith(ball)
   const p2touch = rightPad.collidesWith(ball)
   if (p1touch.collides || p2touch.collides) {
+    audio.paddle.play()
     // Make the ball bounce off of the paddle and speed it up
     if (p1touch.collides) {
       ball.direction = 1
@@ -372,10 +389,14 @@ function pong() {
   // Make the ball bounce off of the top and bottom
   const bounceTop = ball.top <= ball.height()/2
   const bounceBottom = ball.top >= ball.parent.height() - ball.height()/2
-  if (bounceTop)
-    ball.deviation = Math.abs(ball.deviation)
-  else if (bounceBottom)
-    ball.deviation = -Math.abs(ball.deviation)
+  if (bounceTop || bounceBottom) {
+    if (bounceTop)
+      ball.deviation = Math.abs(ball.deviation)
+    else if (bounceBottom)
+      ball.deviation = -Math.abs(ball.deviation)
+
+    audio.wall.play()
+  }
 
   ball.animate()
 
