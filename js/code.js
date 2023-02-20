@@ -9,13 +9,15 @@ const container = $('#pong')
   .addClass('default')
   .hide()
 
+// Variables for dimensions
 const pongScale = container.data('pong-scale')
 const SCALE = isNaN(+pongScale) ? 1 : pongScale
 const WIDTH = 400*SCALE
 const HEIGHT = 300*SCALE
-const SIZE = 10*SCALE
+const PIXEL = 10*SCALE
 container.css({"font-size": SCALE*20+"px"})
 
+// Audio variables
 let volume = +container.data('pong-volume')
 if (isNaN(volume) || Math.abs(volume) > 1)
   volume = 0.5
@@ -52,7 +54,7 @@ container.shake = function(speed = 50, iterations = 5) {
 }
 
 class Paddle extends jQuery {
-  width = SIZE
+  width = PIXEL
   height = HEIGHT/3 // 100
   speed = WIDTH/80 // 5
   top = this.width
@@ -142,8 +144,8 @@ class Ball extends jQuery {
     super('<div>')
       .css({
         "position": "absolute",
-        "height": SIZE+"px",
-        "width": SIZE+"px",
+        "height": PIXEL+"px",
+        "width": PIXEL+"px",
         "background-color": "var(--pong-fg)",
       })
       .appendTo(parent)
@@ -232,8 +234,8 @@ const header = jQuery('<div>')
     "font-family": "inherit",
     "font-weight": "inherit",
     "width": "100%",
-    "padding": SIZE+"px",
-    "border": SIZE+"px solid var(--pong-fg)",
+    "padding": PIXEL+"px",
+    "border": PIXEL+"px solid var(--pong-fg)",
     "border-bottom-width": "0px",
     "box-sizing": "border-box"
   })
@@ -262,14 +264,15 @@ const gameScreen = jQuery('<div>')
     "background-color": "var(--pong-bg)",
     "width": WIDTH+"px",
     "height": HEIGHT+"px",
-    "border": SIZE+"px solid var(--pong-fg)",
+    "border": PIXEL+"px solid var(--pong-fg)",
     "position": "relative"
   })
   .appendTo(container)
 
 // Create a button to switch themes
+let themeBtn
 if (container.data('pong-hide-themebtn') === undefined) {
-  jQuery('<div>')
+  themeBtn = jQuery('<div>')
     .text("Change theme")
     .click(() => {
       let i = themeNames.indexOf(currentTheme)
@@ -284,15 +287,16 @@ if (container.data('pong-hide-themebtn') === undefined) {
       "color": "var(--pong-fg)",
       "font-size": ".8em",
       "width": "100%",
-      "padding": SIZE+"px",
-      "border": SIZE+"px solid var(--pong-fg)",
+      "padding": PIXEL+"px",
+      "border": PIXEL+"px solid var(--pong-fg)",
       "border-top-width": "0px",
       "box-sizing": "border-box",
+      "cursor": "pointer"
     })
     .appendTo(container)
 }
 
-const pauseText = jQuery('<p>')
+const info = jQuery('<p>')
   .css({
     "position": "absolute",
     "inset": "0",
@@ -330,7 +334,6 @@ function handleInput() {
 const initialBallSpeed = ball.baseSpeed
 let playing = true
 let serving = true
-let restart = false
 let p1Score = 0
 let p2Score = 0
 
@@ -354,15 +357,16 @@ function pong() {
       ball.direction = -1
       p1Score++
     }
-
     score.text(p1Score + ' - ' + p2Score)
+
+    // If the winner gets 10 points, display a message and stop the game.
     if (p1Score >= 10 || p2Score >= 10) {
+      // Stop the game completely.
       playing = false
       serving = false
-      pauseText.show(100)
-      pauseText.text((p1win ? 'Player 1' : 'Player 2') + ' won!')
+      info.show(100)
+      info.text((p1win ? 'Player 1' : 'Player 2') + ' won!')
       container.shake(60, 30)
-      restart = true
       return
     } else {
       container.shake()
@@ -420,10 +424,10 @@ function serve(paddle) {
 
   // Move the ball alongside the paddle
   let top = paddle.top + paddle.height/2 - ball.height()/2
-  let left = paddle.width*2 + SIZE
+  let left = paddle.width*2 + PIXEL
   ball.direction = 1
   if (paddle.side == "right") {
-    left = paddle.parent.width() - left - SIZE
+    left = paddle.parent.width() - left - PIXEL
     ball.direction = -1
   }
   ball.moveTo(top, left)
@@ -437,50 +441,53 @@ function serve(paddle) {
   }
 }
 
-// When the document loads, fade in the game and serve
 $(document)
+  // When the page loads, fade in the game and serve
   .ready(() => {
     container.fadeIn(1000)
     serve()
   })
-  .keydown(ev => {
-    ev.preventDefault()
-    if (restart) {
-      p1Score = 0
-      p2Score = 0
-      score.text('0 - 0')
-      pauseText.hide(0)
-      pauseText.text('PAUSED')
-      restart = false
-      ball.deviate()
-      serving = true
-      serve()
-      // If the 'p' or 'q' keys are is pressed, pause/play
-    } else if ((ev.key == 'p' || ev.key == 'q') && !serving) {
-      if (playing) {
-        playing = false
-        pauseText.show(100)
-      } else {
-        playing = true
-        pauseText.hide(100)
-        pong()
+  .on({
+    keydown: ev => {
+      // Prevent the theme button from being pressed when the spacebar is pressed
+      if (ev.target == themeBtn)
+        ev.preventDefault()
+      // If the game is completely stopped, reset variables and start it again
+      if (!(playing || serving)) {
+        p1Score = 0
+        p2Score = 0
+        score.text('0 - 0')
+        info.hide(0)
+        info.text('PAUSED')
+        ball.deviate()
+        serving = true
+        serve()
+        // If the 'p' or 'q' keys are is pressed, pause/play
+      } else if ((ev.key == 'p' || ev.key == 'q') && !serving) {
+        if (playing) {
+          playing = false
+          info.show(100)
+        } else {
+          playing = true
+          info.hide(100)
+          pong()
+        }
+        return
+        // Serve if the spacebar is pressed, and move the paddle
+      } else if (ev.key == ' ' && serving) {
+        audio.serve.play()
+        serving = false
       }
-      return
-      // Serve if the spacebar is pressed, and move the paddle
-    } else if (ev.key == ' ' && serving) {
-      audio.serve.play()
-      serving = false
+
+      // When pressing one of the keys in the handler, mark it as pressed
+      // This allows multiple keys to be pressed at the same time
+      if(keyHandler[ev.key])
+        keyHandler[ev.key].pressed = true
+    },
+    // Add keydown and keyup events to the document
+    keyup: ev => {
+      // When one of the keys in the handler is released, mark it as not pressed
+      if(keyHandler[ev.key])
+        keyHandler[ev.key].pressed = false
     }
-
-    // When pressing one of the keys in the handler, mark it as pressed
-    // This allows multiple keys to be pressed at the same time
-    if(keyHandler[ev.key])
-      keyHandler[ev.key].pressed = true
   })
-  .keyup(ev => {
-    // When one of the keys in the handler is released, mark it as not pressed
-    if(keyHandler[ev.key])
-      keyHandler[ev.key].pressed = false
-  })
-
-
