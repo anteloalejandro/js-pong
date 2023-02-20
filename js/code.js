@@ -199,10 +199,10 @@ class Ball extends jQuery {
 let currentTheme = container.data('pong-theme')
 const themes = {
   default: { bg: '#282828', fg: '#dddddd' },
-  groovy1: { bg: '#282828', fg: '#EBDBB2' },
-  groovy2: { bg: '#282828', fg: '#CC241D' },
-  groovy3: { bg: '#282828', fg: '#689D6A' },
-  groovy4: { bg: '#282828', fg: '#98971A' },
+  groovy:  { bg: '#282828', fg: '#EBDBB2' },
+  red:     { bg: '#282828', fg: '#CC241D' },
+  green:   { bg: '#282828', fg: '#689D6A' },
+  blue:    { bg: '#282828', fg: '#458588' },
   light:   { bg: '#dddddd', fg: '#282828' },
   gameboy: { bg: '#8BAC0F', fg: '#0F380F' }
 }
@@ -265,7 +265,8 @@ const gameScreen = jQuery('<div>')
     "width": WIDTH+"px",
     "height": HEIGHT+"px",
     "border": PIXEL+"px solid var(--pong-fg)",
-    "position": "relative"
+    "position": "relative",
+    "box-sizing": "unset"
   })
   .appendTo(container)
 
@@ -393,8 +394,8 @@ function pong() {
 
 
   // Make the ball bounce off of the top and bottom
-  const bounceTop = ball.top <= ball.height()/2
-  const bounceBottom = ball.top >= ball.parent.height() - ball.height()/2
+  const bounceTop = ball.top <= 0
+  const bounceBottom = ball.top >= ball.parent.height() - ball.height()
   if (bounceTop || bounceBottom) {
     if (bounceTop)
       ball.deviation = Math.abs(ball.deviation)
